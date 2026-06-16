@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+ <h1>Substitution-Permutation Network (SPN) Demo</h1>
+
+    <p class="note">
+        A 16-bit toy block cipher built from an S-Box (substitution),
+        permutation, and key mixing repeated over several rounds (like AES).
+    </p>
+
+    <!-- ENCRYPT / DECRYPT -->
+    <div class="card">
+        <h2>Encrypt / Decrypt</h2>
+
+        <form method="POST">
+
+            <div class="form-row">
+                <label>Operation</label>
+                <select name="action">
+                    <option value="encrypt"
+                        {% if request.form.get('action') != 'decrypt' %}selected{% endif %}>
+                        Encrypt text
+                    </option>
+
+                    <option value="decrypt"
+                        {% if request.form.get('action') == 'decrypt' %}selected{% endif %}>
+                        Decrypt ciphertext blocks
+                    </option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <label>Plaintext / Ciphertext</label>
+                <input type="text" name="plaintext"
+                       value="{{ request.form.get('plaintext','HELLO') }}">
+            </div>
+
+            <div class="form-row">
+                <label>Key (0–65535)</label>
+                <input type="number" name="key" min="0" max="65535"
+                       value="{{ request.form.get('key', 43981) }}">
+            </div>
+
+            <div class="form-row">
+                <label>Rounds</label>
+                <input type="number" name="rounds" min="1" max="10"
+                       value="{{ request.form.get('rounds', 4) }}">
+            </div>
+
+            <button type="submit" class="btn">Run</button>
+        </form>
+
+        {% if error %}
+            <div class="result-box" style="border-left-color:red;">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        {% if result and result.ciphertext_hex %}
+            <div class="result-box">
+                <b>Ciphertext (hex):</b> {{ result.ciphertext_hex|join(', ') }}<br>
+                <b>Ciphertext (decimal):</b> {{ result.ciphertext_blocks|join(', ') }}
+            </div>
+        {% endif %}
+
+        {% if result and result.plaintext is defined %}
+            <div class="result-box">
+                <b>Decrypted:</b> {{ result.plaintext }}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- TRACE -->
+    {% if trace %}
+    <div class="card">
+        <h2>Round Trace</h2>
+
+        <table class="trace-table">
+            <tr>
+                <th>Stage</th>
+                <th>Round</th>
+                <th>Hex</th>
+                <th>Binary</th>
+            </tr>
+
+            {% for name, rnd, val in trace %}
+            <tr>
+                <td>{{ name }}</td>
+                <td>{{ rnd }}</td>
+                <td>0x{{ '%04X'|format(val) }}</td>
+                <td>{{ '{:016b}'.format(val) }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+
+    <!-- AVALANCHE -->
+    {% if avalanche %}
+    <div class="card">
+        <h2>Avalanche Effect</h2>
+
+        <div class="result-box">
+            Original: 0x{{ '%04X'|format(avalanche.original_cipher) }}<br>
+            Modified: 0x{{ '%04X'|format(avalanche.modified_cipher) }}<br>
+            Bits changed: {{ avalanche.differing_bits }}/16
+            ({{ avalanche.percentage_changed }}%)
+        </div>
+
+        <p class="note">
+            Ideal cipher should approach ~50% bit change.
+        </p>
+    </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<h1>Block Cipher Security Analyzer</h1>
+
+<p class="note">
+ Tools for Algebraic, Differential, Linear Cryptanalysis,
+ Frequency Analysis, and Avalanche Testing using the SPN cipher.
+</p>
+
+    <!-- 1. ALGEBRAIC ATTACK -->
+    <div class="card">
+        <h2>1. Algebraic Attack</h2>
+
+        <form method="POST">
+            <input type="hidden" name="tool" value="algebraic">
+
+            <div class="form-row">
+                <label>Plaintext</label>
+                <input type="number" name="plaintext_alg"
+                       value="{{ request.form.get('plaintext_alg', 12) }}">
+            </div>
+
+            <div class="form-row">
+                <label>Key</label>
+                <input type="number" name="key_alg"
+                       value="{{ request.form.get('key_alg', 5) }}">
+            </div>
+
+            <button type="submit" class="btn">Run Algebraic Attack</button>
+        </form>
+
+        {% if algebraic_result %}
+        <div class="result-box">
+            Plaintext: {{ algebraic_result.plaintext }} |
+            Key: {{ algebraic_result.key }} |
+            Ciphertext: {{ algebraic_result.ciphertext }}<br>
+            Recovered Key: {{ algebraic_result.recovered_key }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 2. DIFFERENTIAL -->
+    <div class="card">
+        <h2>2. Differential Cryptanalysis</h2>
+
+        <form method="POST">
+            <input type="hidden" name="tool" value="difference">
+
+            <div class="form-row">
+                <label>Plaintext 1</label>
+                <input type="number" name="plaintext1"
+                       value="{{ request.form.get('plaintext1', 18533) }}">
+            </div>
+
+            <div class="form-row">
+                <label>Plaintext 2</label>
+                <input type="number" name="plaintext2"
+                       value="{{ request.form.get('plaintext2', 18532) }}">
+            </div>
+
+            <div class="form-row">
+                <label>Key</label>
+                <input type="number" name="key"
+                       value="{{ request.form.get('key', 43981) }}">
+            </div>
+
+            <div class="form-row">
+                <label>Rounds</label>
+                <input type="number" name="rounds"
+                       value="{{ request.form.get('rounds', 4) }}">
+            </div>
+
+            <button type="submit" class="btn">Run Differential</button>
+        </form>
+
+        {% if diff_result %}
+        <div class="result-box">
+            Input Diff: {{ diff_result.input_difference.difference }} |
+            Output Diff: {{ diff_result.output_difference.difference }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 3. LINEAR -->
+    <div class="card">
+        <h2>3. Linear Cryptanalysis</h2>
+
+        <form method="POST">
+            <input type="hidden" name="tool" value="linear">
+
+            <div class="form-row">
+                <label>Key</label>
+                <input type="number" name="key"
+                       value="{{ request.form.get('key', 43981) }}">
+            </div>
+
+            <div class="form-row">
+                <label>Rounds</label>
+                <input type="number" name="rounds"
+                       value="{{ request.form.get('rounds', 4) }}">
+            </div>
+
+            <button type="submit" class="btn">Run Linear</button>
+        </form>
+
+        {% if linear_result %}
+        <div class="result-box">
+            Samples: {{ linear_result.samples }} |
+            Bias: {{ linear_result.bias }}
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- 4. FREQUENCY -->
+    <div class="card">
+        <h2>4. Frequency Analysis</h2>
+
+        <form method="POST">
+            <input type="hidden" name="tool" value="frequency">
+
+            <div class="form-row">
+                <label>Text</label>
+                <textarea name="text">{{ request.form.get('text', 'ABABABABCCCCDDD') }}</textarea>
+            </div>
+
+            <button type="submit" class="btn">Analyze</button>
+        </form>
+
+        {% if freq_result %}
+        <table class="trace-table">
+            <tr><th>Symbol</th><th>Count</th><th>%</th></tr>
+            {% for symbol, count, pct in freq_result %}
+            <tr>
+                <td>{{ symbol }}</td>
+                <td>{{ count }}</td>
+                <td>{{ pct }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+    </div>
+
+    <!-- 5. AVALANCHE -->
+    <div class="card">
+        <h2>Avalanche Effect</h2>
+
+        <form method="POST">
+            <input type="hidden" name="tool" value="avalanche">
+
+            <div class="form-row">
+                <label>Key</label>
+                <input type="number" name="key"
+                       value="{{ request.form.get('key', 43981) }}">
+            </div>
+
+            <div class="form-row">
+                <label>Rounds</label>
+                <input type="number" name="rounds"
+                       value="{{ request.form.get('rounds', 4) }}">
+            </div>
+
+            <button type="submit" class="btn">Run Test</button>
+        </form>
+
+        {% if avalanche_result %}
+        <div class="result-box">
+            Avg Change: {{ avalanche_result.average_percent_changed }}%
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ATTACK TABLE -->
+    <div class="card">
+        <h3>Attack Model Reference</h3>
+
+        <table class="trace-table">
+            <tr><th>Type</th><th>Description</th></tr>
+            <tr><td>Ciphertext-Only</td><td>Only ciphertext known</td></tr>
+            <tr><td>Known Plaintext</td><td>Some pairs known</td></tr>
+            <tr><td>Chosen Plaintext</td><td>Attacker chooses input</td></tr>
+            <tr><td>Chosen Ciphertext</td><td>Attacker chooses output</td></tr>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}
